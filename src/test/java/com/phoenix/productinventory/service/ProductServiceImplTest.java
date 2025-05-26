@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -64,10 +65,13 @@ class ProductServiceImplTest {
   @DisplayName("Given valid page request when getAllProducts then returns product list")
   void givenPageRequest_whenGetAllProducts_thenReturnsProductList() {
     Page<Product> page = new PageImpl<>(List.of(product));
-    when(productRepository.findAll(any(Pageable.class))).thenReturn(page);
+    when(productRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
     when(productMapper.toDto(product)).thenReturn(responseDto);
 
-    Page<ProductResponseDto> result = productService.getAllProducts(PageRequest.of(0, 10));
+    Specification<Product> spec = Specification.where(null);
+    Pageable pageable = PageRequest.of(0, 10);
+
+    Page<ProductResponseDto> result = productService.getAllProducts(spec, pageable);
 
     assertThat(result.getContent()).hasSize(1);
   }
