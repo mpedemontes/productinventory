@@ -59,8 +59,10 @@ public class ProductController {
   }
 
   @Operation(
-      summary = "Get all products",
-      description = "Retrieves a paginated list of products.",
+      summary = "Get products with optional filters, pagination, and sorting",
+      description =
+          "Retrieves products optionally filtered by name, price, and quantity, with support for pagination and sorting. "
+              + "Sorting can be applied by adding 'sort' query parameters (e.g., sort=price,asc).",
       responses = {
         @ApiResponse(
             responseCode = "200",
