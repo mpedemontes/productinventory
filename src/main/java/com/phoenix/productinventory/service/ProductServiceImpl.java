@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,8 +34,8 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   @Transactional(readOnly = true)
-  public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
-    return repository.findAll(pageable).map(mapper::toDto);
+  public Page<ProductResponseDto> getAllProducts(Specification<Product> spec, Pageable pageable) {
+    return repository.findAll(spec, pageable).map(mapper::toDto);
   }
 
   @Override
