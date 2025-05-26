@@ -2,16 +2,21 @@ package com.phoenix.productinventory.controller;
 
 import com.phoenix.productinventory.dto.ProductRequestDto;
 import com.phoenix.productinventory.dto.ProductResponseDto;
+import com.phoenix.productinventory.model.Product;
 import com.phoenix.productinventory.service.ProductService;
+import com.phoenix.productinventory.spcification.ProductSpecification;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,12 +25,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.math.BigDecimal;
 
 /** REST controller for managing products. */
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
+@Tag(name = "Product", description = "API for managing products in the inventory")
 public class ProductController {
 
   private final ProductService productService;
@@ -60,8 +69,26 @@ public class ProductController {
       })
   @GetMapping
   public ResponseEntity<Page<ProductResponseDto>> getAllProducts(
-      @Parameter(description = "Pagination information") Pageable pageable) {
-    return ResponseEntity.ok(productService.getAllProducts(pageable));
+      @Parameter(description = "Product name filter (optional)") @RequestParam(required = false)
+          String name,
+      @Parameter(description = "Minimum price filter (optional)") @RequestParam(required = false)
+          BigDecimal minPrice,
+      @Parameter(description = "Maximum price filter (optional)") @RequestParam(required = false)
+          BigDecimal maxPrice,
+      @Parameter(description = "Minimum quantity filter (optional)") @RequestParam(required = false)
+          Integer minQuantity,
+      @Parameter(description = "Maximum quantity filter (optional)") @RequestParam(required = false)
+          Integer maxQuantity,
+      @ParameterObject Pageable pageable) {
+
+    Specification<Product> spec =
+        Specification.where(ProductSpecification.hasName(name))
+            .and(ProductSpecification.hasMinPrice(minPrice))
+            .and(ProductSpecification.hasMaxPrice(maxPrice))
+            .and(ProductSpecification.hasMinQuantity(minQuantity))
+            .and(ProductSpecification.hasMaxQuantity(maxQuantity));
+
+    return ResponseEntity.ok(productService.getAllProducts(spec, pageable));
   }
 
   @Operation(
