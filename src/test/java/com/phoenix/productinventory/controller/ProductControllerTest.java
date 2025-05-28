@@ -33,7 +33,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class ProductControllerTest {
 
   private final ProductResponseDto responseDto =
-      new ProductResponseDto(1L, "Test", "Desc", BigDecimal.valueOf(10), 5, 0);
+      new ProductResponseDto(1L, "Test", "Desc", BigDecimal.valueOf(10), 5, null, 0);
   @Autowired private MockMvc mockMvc;
   @MockitoBean private ProductService productService;
   @Autowired private ObjectMapper objectMapper;
@@ -106,5 +106,27 @@ class ProductControllerTest {
   @DisplayName("Given valid ID when deleteProduct then returns 204 status")
   void givenValidId_whenDeleteProduct_thenReturnsNoContent() throws Exception {
     mockMvc.perform(delete("/products/1")).andExpect(status().isNoContent());
+  }
+
+  @Test
+  @DisplayName("When assignCategoryToProduct then returns updated product with 200 status")
+  void whenAssignCategoryToProduct_thenReturnsUpdatedProduct() throws Exception {
+    when(productService.assignCategory(eq(1L), eq(2L))).thenReturn(responseDto);
+
+    mockMvc
+        .perform(put("/products/1/category/2"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value(responseDto.getName()));
+  }
+
+  @Test
+  @DisplayName("When removeCategoryFromProduct then returns updated product with 200 status")
+  void whenRemoveCategoryFromProduct_thenReturnsUpdatedProduct() throws Exception {
+    when(productService.removeCategory(eq(1L))).thenReturn(responseDto);
+
+    mockMvc
+        .perform(delete("/products/1/category"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value(responseDto.getName()));
   }
 }

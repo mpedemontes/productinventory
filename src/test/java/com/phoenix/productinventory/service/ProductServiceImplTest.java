@@ -1,11 +1,22 @@
 package com.phoenix.productinventory.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.phoenix.productinventory.dto.ProductRequestDto;
 import com.phoenix.productinventory.dto.ProductResponseDto;
 import com.phoenix.productinventory.exception.ResourceNotFoundException;
 import com.phoenix.productinventory.mapper.ProductMapper;
+import com.phoenix.productinventory.model.Category;
 import com.phoenix.productinventory.model.Product;
 import com.phoenix.productinventory.repository.ProductRepository;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,21 +30,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 class ProductServiceImplTest {
 
   @Mock private ProductRepository productRepository;
   @Mock private ProductMapper productMapper;
+  @Mock private CategoryService categoryService;
   @InjectMocks private ProductServiceImpl productService;
 
   private Product product;
@@ -43,9 +44,9 @@ class ProductServiceImplTest {
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-    product = new Product(1L, "Test", "Desc", BigDecimal.valueOf(10), 5, 0);
+    product = new Product(1L, "Test", "Desc", BigDecimal.valueOf(10), 5, 0, null);
     requestDto = new ProductRequestDto("Test", "Desc", BigDecimal.valueOf(10), 5);
-    responseDto = new ProductResponseDto(1L, "Test", "Desc", BigDecimal.valueOf(10), 5, 0);
+    responseDto = new ProductResponseDto(1L, "Test", "Desc", BigDecimal.valueOf(10), 5, null, 0);
   }
 
   @Test
@@ -151,6 +152,52 @@ class ProductServiceImplTest {
     when(productRepository.findById(1L)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> productService.deleteProduct(1L))
+        .isInstanceOf(ResourceNotFoundException.class);
+  }
+
+  @Test
+  @DisplayName("Given valid product and category IDs when assignCategory then assigns category")
+  void givenValidProductAndCategoryIds_whenAssignCategory_thenAssignsCategory() {
+    when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+    Category category = new Category(2L, "TestCategory", "Desc", 0L, null);
+    when(categoryService.getCategoryEntityById(2L)).thenReturn(category);
+    when(productRepository.save(any(Product.class))).thenReturn(product);
+    when(productMapper.toDto(any(Product.class))).thenReturn(responseDto);
+
+    ProductResponseDto result = productService.assignCategory(1L, 2L);
+
+    assertThat(result).isNotNull();
+    verify(productRepository).save(product);
+  }
+
+  @Test
+  @DisplayName("Given invalid product ID when assignCategory then throws ResourceNotFoundException")
+  void givenInvalidProductId_whenAssignCategory_thenThrowsException() {
+    when(productRepository.findById(1L)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> productService.assignCategory(1L, 2L))
+        .isInstanceOf(ResourceNotFoundException.class);
+  }
+
+  @Test
+  @DisplayName("Given valid product ID when removeCategory then removes category")
+  void givenValidProductId_whenRemoveCategory_thenRemovesCategory() {
+    when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+    when(productRepository.save(any(Product.class))).thenReturn(product);
+    when(productMapper.toDto(any(Product.class))).thenReturn(responseDto);
+
+    ProductResponseDto result = productService.removeCategory(1L);
+
+    assertThat(result).isNotNull();
+    verify(productRepository).save(product);
+  }
+
+  @Test
+  @DisplayName("Given invalid product ID when removeCategory then throws ResourceNotFoundException")
+  void givenInvalidProductId_whenRemoveCategory_thenThrowsException() {
+    when(productRepository.findById(1L)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> productService.removeCategory(1L))
         .isInstanceOf(ResourceNotFoundException.class);
   }
 }
