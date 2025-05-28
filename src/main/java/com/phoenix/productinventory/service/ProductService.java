@@ -4,10 +4,10 @@ import com.phoenix.productinventory.dto.ProductRequestDto;
 import com.phoenix.productinventory.dto.ProductResponseDto;
 import com.phoenix.productinventory.exception.ResourceNotFoundException;
 import com.phoenix.productinventory.model.Product;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.dao.OptimisticLockingFailureException;
 
 /** Service interface for managing products. */
 public interface ProductService {
@@ -56,4 +56,24 @@ public interface ProductService {
    * @throws ResourceNotFoundException If no product with the given ID exists.
    */
   void deleteProduct(Long id);
+
+  /**
+   * Assigns a category to the specified product. Existing category associations will be replaced
+   * with the provided category.
+   *
+   * @param productId the ID of the product
+   * @param categoryId the ID of the category to assign
+   * @return the updated product
+   * @throws ResourceNotFoundException if the product or any category is not found
+   */
+  ProductResponseDto assignCategory(Long productId, Long categoryId);
+
+  /**
+   * Removes the category from the specified product.
+   *
+   * @param productId the ID of the product
+   * @return the updated product
+   * @throws ResourceNotFoundException if the product is not found
+   */
+  ProductResponseDto removeCategory(Long productId);
 }

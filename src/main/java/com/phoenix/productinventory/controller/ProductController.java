@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -27,8 +28,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.math.BigDecimal;
 
 /** REST controller for managing products. */
 @RestController
@@ -133,5 +132,46 @@ public class ProductController {
       @Parameter(description = "Product ID") @PathVariable Long id) {
     productService.deleteProduct(id);
     return ResponseEntity.noContent().build();
+  }
+
+  @Operation(
+      summary = "Assigns a category to a product",
+      description = "Assigns a category to the specified product.",
+      responses = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Product updated successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ProductResponseDto.class))),
+        @ApiResponse(responseCode = "404", description = "Product or category not found")
+      })
+  @PutMapping("/{productId}/category/{categoryId}")
+  public ResponseEntity<ProductResponseDto> assignCategoriesToProduct(
+      @Parameter(description = "Product ID") @PathVariable Long productId,
+      @Parameter(description = "Category ID") @PathVariable Long categoryId) {
+    ProductResponseDto updatedProduct = productService.assignCategory(productId, categoryId);
+    return ResponseEntity.ok(updatedProduct);
+  }
+
+  @Operation(
+      summary = "Remove category from a product",
+      description = "Removes the category from the specified product.",
+      responses = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Category removed successfully from product",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ProductResponseDto.class))),
+        @ApiResponse(responseCode = "404", description = "Product not found"),
+        @ApiResponse(responseCode = "404", description = "Category not found")
+      })
+  @DeleteMapping("/{productId}/category")
+  public ResponseEntity<ProductResponseDto> removeCategoriesFromProduct(
+      @Parameter(description = "Product ID") @PathVariable Long productId) {
+    return ResponseEntity.ok(productService.removeCategory(productId));
   }
 }

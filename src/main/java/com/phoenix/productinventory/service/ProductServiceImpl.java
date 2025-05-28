@@ -4,6 +4,7 @@ import com.phoenix.productinventory.dto.ProductRequestDto;
 import com.phoenix.productinventory.dto.ProductResponseDto;
 import com.phoenix.productinventory.exception.ResourceNotFoundException;
 import com.phoenix.productinventory.mapper.ProductMapper;
+import com.phoenix.productinventory.model.Category;
 import com.phoenix.productinventory.model.Product;
 import com.phoenix.productinventory.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class ProductServiceImpl implements ProductService {
 
   private final ProductRepository repository;
   private final ProductMapper mapper;
+  private final CategoryService categoryService;
 
   @Override
   @Transactional
@@ -73,5 +75,30 @@ public class ProductServiceImpl implements ProductService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException(String.format(PRODUCT_NOT_FOUND, id)));
     repository.delete(product);
+  }
+
+  @Override
+  @Transactional
+  public ProductResponseDto assignCategory(Long productId, Long categoryId) {
+    Product product =
+        repository
+            .findById(productId)
+            .orElseThrow(
+                () -> new ResourceNotFoundException(String.format(PRODUCT_NOT_FOUND, productId)));
+    Category category = categoryService.getCategoryEntityById(categoryId);
+    product.setCategory(category);
+    Product updatedProduct = repository.save(product);
+    return mapper.toDto(updatedProduct);
+  }
+
+  public ProductResponseDto removeCategory(Long productId) {
+    Product product =
+        repository
+            .findById(productId)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("Product not found with id " + productId));
+    product.setCategory(null);
+    Product updatedProduct = repository.save(product);
+    return mapper.toDto(updatedProduct);
   }
 }
