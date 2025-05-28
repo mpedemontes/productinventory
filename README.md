@@ -6,7 +6,9 @@ A RESTful API for managing products in an inventory system, developed with **Spr
 ## 📚 Features
 
 - Create, retrieve, update, and delete products
-- Pagination support for listing products
+- Create, retrieve, update, and delete categories
+- Assign and remove categories from products
+- Pagination support for listing products and categories
 - Validation of request data
 - Optimistic locking to prevent concurrent updates
 - Comprehensive error handling with proper HTTP responses
@@ -86,6 +88,10 @@ src/
 - **Validation**: All input data is validated, and errors return meaningful responses.
 - **Optimistic Locking**: Updates may fail with HTTP `409 Conflict` if another transaction modified the data.
 - **Exception Handling**: All exceptions are translated into appropriate HTTP responses.
+- **Category Relationship**: Each product can be assigned to a category. Use the dedicated endpoints to manage these
+  associations.
+- **Pagination Serialization**: Pagination responses are serialized using `PageSerializationMode.VIA_DTO` for a stable
+  and predictable JSON structure.
 
 ---
 
