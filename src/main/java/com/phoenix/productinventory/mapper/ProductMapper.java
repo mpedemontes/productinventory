@@ -15,7 +15,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
  *
  * <p>This mapper simplifies object transformations and ensures consistency across layers.
  */
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = ProductMapper.class)
 public interface ProductMapper {
 
   /**

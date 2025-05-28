@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.DecimalMin;
@@ -60,4 +62,13 @@ public class Product {
 
   /** Version field used for optimistic locking. */
   @Version private Integer version;
+
+  /**
+   * Category to which this product belongs. Defines the many-to-one relationship between Product
+   * and Category. Each product is associated with one category, while a category can have multiple
+   * products.
+   */
+  @ManyToOne
+  @JoinColumn(name = "category_id")
+  private Category category;
 }

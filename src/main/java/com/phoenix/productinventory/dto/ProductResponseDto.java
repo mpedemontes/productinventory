@@ -31,6 +31,9 @@ public class ProductResponseDto {
   /** Quantity in stock. */
   private Integer quantity;
 
+  /** Category associated with the product. */
+  private CategoryResponseDto category;
+
   /** Version used for optimistic locking. */
   private Integer version;
 }
